@@ -1,0 +1,4 @@
+config:
+  cloud-project:publicKeyPath: /home/daniel/Documents/projects/cloud-project/keys/id_rsa.pub
+  cloud-project:privateKeyPath: /home/daniel/Documents/projects/cloud-project/keys/id_rsa
+  cloud-project:ami: ami-07ce6ac5ac8a0ee6f
