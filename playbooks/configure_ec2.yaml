@@ -8,25 +8,22 @@
       yum:
         name: 
           - yum-utils
-          - libxcrypt-compat
           - python3-pip
           - docker
           - git
         state: latest
 
-    - name: Install docker-compose
-      remote_user: ec2-user
-      get_url:
-        url : https://github.com/docker/compose/releases/download/1.23.2/docker-compose-Linux-x86_64
-        dest: /usr/local/bin/docker-compose
-        mode: '+x'
-    
+    - name: Install requests python package
+      ansible.builtin.pip:
+        name:
+          - requests
+          - urllib3==1.26.6
+
     - name: install 'Docker SDK for Python'
       become: false
       pip:
         name:
           - docker
-          - docker-compose
 
     - name: Add user to the docker group
       user:
@@ -39,3 +36,11 @@
         name: docker
         state: started
         enabled: yes
+
+    - name: Create nginx container
+      docker_container:
+        name: nginx
+        restart_policy: always
+        image: nginx:1.21.0
+        ports:
+          - "80:80"
