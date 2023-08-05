@@ -1,3 +1,4 @@
+import pulumi
 import pulumi_aws as aws
 
 import config
@@ -65,3 +66,5 @@ alb = load_balancer.configure(
 )
 
 ec2.configure_machines(instances=instances, alb=alb)
+
+pulumi.export("url", alb.dns_name)
