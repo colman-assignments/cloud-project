@@ -5,6 +5,7 @@ import config
 
 import modules.network as network
 import modules.ec2 as ec2
+import modules.rds as rds
 import modules.load_balancer as load_balancer
 
 vpc, public_subnets, private_subnets = network.configure()
@@ -28,6 +29,12 @@ security_group = aws.ec2.SecurityGroup(
             "protocol": "tcp",
             "from_port": 80,
             "to_port": 80,
+            "cidr_blocks": ["0.0.0.0/0"],
+        },
+        {
+            "protocol": "tcp",
+            "from_port": 8001,
+            "to_port": 8001,
             "cidr_blocks": ["0.0.0.0/0"],
         },
         {
@@ -58,6 +65,8 @@ instances = ec2.deploy_machines(
     public_subnets=public_subnets,
 )
 
+rds_instance = rds.configure(vpc=vpc, subnets=private_subnets)
+
 alb = load_balancer.configure(
     vpc=vpc,
     instances=instances,
@@ -65,6 +74,6 @@ alb = load_balancer.configure(
     security_group=security_group,
 )
 
-ec2.configure_machines(instances=instances, alb=alb)
+ec2.configure_machines(instances=instances, alb=alb, rds=rds_instance)
 
 pulumi.export("url", alb.dns_name)

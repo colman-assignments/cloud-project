@@ -19,11 +19,19 @@
           - requests
           - urllib3==1.26.6
 
+    - name: Install docker-compose
+      remote_user: ec2-user
+      get_url:
+        url : https://github.com/docker/compose/releases/download/1.23.2/docker-compose-Linux-x86_64
+        dest: /usr/local/bin/docker-compose
+        mode: '+x'
+
     - name: install 'Docker SDK for Python'
       become: false
       pip:
         name:
           - docker
+          - docker-compose
 
     - name: Add user to the docker group
       user:
@@ -37,10 +45,19 @@
         state: started
         enabled: yes
 
-    - name: Create nginx container
-      docker_container:
-        name: nginx
-        restart_policy: always
-        image: nginx:1.21.0
-        ports:
-          - "80:80"
+    - name: Clone the Git repository
+      git:
+        repo: "https://github.com/bardahan/todo_app.git"
+        dest: "/usr/app"
+
+    - name: Build dockerfiles
+      command: /usr/local/bin/docker-compose -f /usr/app/docker-compose.yml build --no-cache
+
+    # - name: Bring up the Docker Compose project
+    #   command: /usr/local/bin/docker-compose -f /usr/app/docker-compose.yml up -d --force-recreate
+    #   environment:
+    #     DB_SCHEME: $DB_NAME
+    #     DB_HOST: $DB_HOSTNAME
+    #     DB_PASS: $DB_PASSWORD
+    #     DB_USER: $DB_USERNAME
+    #     API_BASE_URL: http://$API_BASE_URL

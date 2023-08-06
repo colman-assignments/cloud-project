@@ -26,7 +26,21 @@ def deploy_machines(
     return instances
 
 
-def configure_machines(instances: list[aws.ec2.Instance], alb: aws.lb.LoadBalancer):
+def configure_machines(
+    instances: list[aws.ec2.Instance], alb: aws.lb.LoadBalancer, rds: aws.rds.Instance
+):
+    render_playbook = command.local.Command(
+        "render_playbook",
+        create="cat playbooks/configure_ec2.yaml | envsubst > playbooks/rendered_configure_ec2.yaml",  # noqa: E501
+        environment={
+            "DB_HOSTNAME": rds.endpoint,
+            "DB_NAME": rds.db_name,
+            "DB_USERNAME": rds.username,
+            "DB_PASSWORD": rds.password,
+            "API_BASE_URL": alb.dns_name,
+        },
+    )
+
     for i, instance in enumerate(instances):
         eip = aws.ec2.Eip(f"eip-{i}", instance=instance.id)
 
@@ -38,7 +52,7 @@ def configure_machines(instances: list[aws.ec2.Instance], alb: aws.lb.LoadBalanc
         -u ec2-user \
         -i '{public_ip},' \
         --private-key {config.private_key_path} \
-        playbooks/configure_ec2.yaml"""
+        playbooks/rendered_configure_ec2.yaml"""
             ),
-            opts=pulumi.ResourceOptions(depends_on=[alb]),
+            opts=pulumi.ResourceOptions(depends_on=[rds, alb, render_playbook]),
         )

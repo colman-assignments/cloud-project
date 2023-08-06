@@ -17,9 +17,13 @@ subnet_config = {
     ],
     "private": [
         {
-            "availability_zone": "eu-central-1c",
+            "availability_zone": "eu-central-1a",
             "cidr_block": "10.0.128.0/20",
-        }
+        },
+        {
+            "availability_zone": "eu-central-1b",
+            "cidr_block": "10.0.144.0/20",
+        },
     ],
 }
 
@@ -28,6 +32,7 @@ def configure() -> tuple[aws.ec2.Vpc, list[aws.ec2.Subnet], list[aws.ec2.Subnet]
     vpc = aws.ec2.Vpc(
         f"{config.project_name}-vpc",
         cidr_block="10.0.0.0/16",
+        enable_dns_hostnames=True,
     )
 
     public_subnets = [

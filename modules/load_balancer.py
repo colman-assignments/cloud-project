@@ -17,36 +17,41 @@ def configure(
         enable_deletion_protection=False,
     )
 
-    target_group = aws.lb.TargetGroup(
-        "http-tg",
-        port=80,
-        protocol="HTTP",
-        vpc_id=vpc.id,
-        health_check=aws.lb.TargetGroupHealthCheckArgs(
-            interval=5,
-            healthy_threshold=5,
-            unhealthy_threshold=2,
-            timeout=3,
-        ),
-    )
+    target_groups = [
+        aws.lb.TargetGroup(
+            f"port-{port}-tg",
+            port=port,
+            protocol="HTTP",
+            vpc_id=vpc.id,
+            health_check=aws.lb.TargetGroupHealthCheckArgs(
+                interval=5,
+                healthy_threshold=5,
+                unhealthy_threshold=2,
+                timeout=3,
+            ),
+        )
+        for port in [80, 8001]
+    ]
 
     for i, instance in enumerate(instances):
-        aws.lb.TargetGroupAttachment(
-            f"instance-{i}-tg-attachment",
-            target_group_arn=target_group.arn,
-            target_id=instance.id,
-        )
+        for j, target_group in enumerate(target_groups):
+            aws.lb.TargetGroupAttachment(
+                f"instance-{i}-{j}-tg-attachment",
+                target_group_arn=target_group.arn,
+                target_id=instance.id,
+            )
 
-    aws.lb.Listener(
-        "alb-listener",
-        load_balancer_arn=alb.arn,
-        port=80,
-        default_actions=[
-            {
-                "type": "forward",
-                "target_group_arn": target_group.arn,
-            }
-        ],
-    )
+    for i, target_group in enumerate(target_groups):
+        aws.lb.Listener(
+            f"alb-{i}-listener",
+            load_balancer_arn=alb.arn,
+            port=target_group.port,
+            default_actions=[
+                {
+                    "type": "forward",
+                    "target_group_arn": target_group.arn,
+                }
+            ],
+        )
 
     return alb
