@@ -5,7 +5,7 @@ import config
 
 def configure(
     vpc: aws.ec2.Vpc, subnets: list[aws.ec2.Subnet]
-) -> list[aws.rds.Instance]:
+) -> aws.rds.Instance:
     rds_subnet_grp = aws.rds.SubnetGroup(
         "rds-subnet-grp", subnet_ids=[subnet.id for subnet in subnets]
     )
@@ -35,6 +35,7 @@ def configure(
         skip_final_snapshot=True,
         db_subnet_group_name=rds_subnet_grp.id,
         vpc_security_group_ids=[security_group.id],
+        publicly_accessible=True,
     )
 
     return rds

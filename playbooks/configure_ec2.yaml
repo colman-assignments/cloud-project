@@ -48,16 +48,17 @@
     - name: Clone the Git repository
       git:
         repo: "https://github.com/bardahan/todo_app.git"
+        version: "wip"
         dest: "/usr/app"
 
     - name: Build dockerfiles
       command: /usr/local/bin/docker-compose -f /usr/app/docker-compose.yml build --no-cache
 
-    # - name: Bring up the Docker Compose project
-    #   command: /usr/local/bin/docker-compose -f /usr/app/docker-compose.yml up -d --force-recreate
-    #   environment:
-    #     DB_SCHEME: $DB_NAME
-    #     DB_HOST: $DB_HOSTNAME
-    #     DB_PASS: $DB_PASSWORD
-    #     DB_USER: $DB_USERNAME
-    #     API_BASE_URL: http://$API_BASE_URL
+    - name: Bring up the Docker Compose project
+      command: /usr/local/bin/docker-compose -f /usr/app/docker-compose.yml up -d --force-recreate
+      environment:
+        DB_SCHEME: $DB_NAME
+        DB_HOST: $DB_HOSTNAME
+        DB_PASS: $DB_PASSWORD
+        DB_USER: $DB_USERNAME
+        API_BASE_URL: http://$API_BASE_URL:8001

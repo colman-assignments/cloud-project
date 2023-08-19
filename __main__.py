@@ -65,7 +65,7 @@ instances = ec2.deploy_machines(
     public_subnets=public_subnets,
 )
 
-rds_instance = rds.configure(vpc=vpc, subnets=private_subnets)
+rds_instance = rds.configure(vpc=vpc, subnets=public_subnets)
 
 alb = load_balancer.configure(
     vpc=vpc,
@@ -76,4 +76,5 @@ alb = load_balancer.configure(
 
 ec2.configure_machines(instances=instances, alb=alb, rds=rds_instance)
 
-pulumi.export("url", alb.dns_name)
+pulumi.export("app_url", alb.dns_name)
+pulumi.export("rds_url", rds_instance.address)

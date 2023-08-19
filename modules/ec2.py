@@ -14,7 +14,7 @@ def deploy_machines(
     instances = [
         aws.ec2.Instance(
             f"{config.project_name}-instance-{i}",
-            instance_type="t2.micro",
+            instance_type="t2.medium",
             ami=aws_linux_ami.id,
             vpc_security_group_ids=[security_group.id],
             key_name=keypair.id,
@@ -31,9 +31,9 @@ def configure_machines(
 ):
     render_playbook = command.local.Command(
         "render_playbook",
-        create="cat playbooks/configure_ec2.yaml | envsubst > playbooks/rendered_configure_ec2.yaml",  # noqa: E501
+        create="cat playbooks/configure_ec2.yaml | envsubst > playbooks/rendered_configure_ec2.yaml && echo 2",  # noqa: E501
         environment={
-            "DB_HOSTNAME": rds.endpoint,
+            "DB_HOSTNAME": rds.address,
             "DB_NAME": rds.db_name,
             "DB_USERNAME": rds.username,
             "DB_PASSWORD": rds.password,
@@ -52,7 +52,8 @@ def configure_machines(
         -u ec2-user \
         -i '{public_ip},' \
         --private-key {config.private_key_path} \
-        playbooks/rendered_configure_ec2.yaml"""
+        playbooks/rendered_configure_ec2.yaml && echo 3"""
             ),
             opts=pulumi.ResourceOptions(depends_on=[rds, alb, render_playbook]),
         )
+    
