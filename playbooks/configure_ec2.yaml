@@ -48,7 +48,7 @@
     - name: Clone the Git repository
       git:
         repo: "https://github.com/bardahan/todo_app.git"
-        version: "wip"
+        version: "main"
         dest: "/usr/app"
 
     - name: Build dockerfiles
